@@ -7,6 +7,18 @@ export const getDashboardStats= async()=>{
                 activeProjects: 6
             });
             reject(new Error("Failed to fetch stats"))
-        },1000)
+        },100)
     })
 }
+
+export const getRecentActivity = async () => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve([
+        { id: 1, activity: "User John Doe created a new project" },
+        { id: 2, activity: "Project X was marked completed" },
+        { id: 3, activity: "User Jane updated profile" },
+      ]);
+    }, 100);
+  });
+};

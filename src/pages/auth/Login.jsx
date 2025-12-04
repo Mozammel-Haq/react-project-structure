@@ -2,6 +2,9 @@ import { useState } from "react";
 import { useUser } from "../../contexts/UserContext";
 import { useNavigate } from "react-router-dom";
 import { useNotification } from "../../contexts/NotificationContext";
+import Card from "../../components/ui/Card";
+import Button from "../../components/ui/Button";
+import Input from "../../components/ui/Input";
 
 function Login() {
   const [user, setUser] = useState({
@@ -32,37 +35,48 @@ function Login() {
   }
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Login</h1>
-
+    <>
+      <div  className="w-screen flex items-center justify-center h-screen">
+              <Card className="min-w-96">
+              <div>
+      <h1 className="text-center text-lg font-bold mb-4">Login</h1>
+      <hr className="h-0.5 w-full mb-4 text-neutral-600" />
       <form onSubmit={handleSubmit} style={{ marginTop: "20px" }}>
-        <div>
-          <label>Email:</label> <br />
-          <input
-            type="email"
-            name="email"
-            value={user.email}
-            onChange={handleChange}
-            required
-          />
+        <div className="my-4">
+        <Input
+        label='Email:'
+        value={user.email}
+        name="email"
+        onChange={handleChange}
+        placeholder="Enter your email"
+        required
+        />
         </div>
-
-        <div style={{ marginTop: "10px" }}>
-          <label>Password:</label> <br />
-          <input
-            type="password"
-            name="password"
-            value={user.password}
-            onChange={handleChange}
-            required
-          />
+        <div className="my-4">
+        <Input
+        label='Password:'
+        value={user.password}
+        type="password"
+        passwordToggle={true}
+        name="password"
+        onChange={handleChange}
+        placeholder="Your password"
+        required
+        />
         </div>
-
-        <button type="submit" style={{ marginTop: "15px" }}>
+      
+        <Button variant="primary" type="submit" className="mt-2">
           Login
-        </button>
+        </Button>
       </form>
     </div>
+      </Card>
+      </div>
+
+
+
+    </>
+
   );
 }
 
