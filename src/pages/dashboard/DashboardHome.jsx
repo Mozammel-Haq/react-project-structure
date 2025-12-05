@@ -14,7 +14,7 @@ function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const statsData = await getDashboardStats(); // dummy API call
+        const statsData = await getDashboardStats();
         const activityData = await getRecentActivity();
         setActivities(activityData);
         setStats(statsData);
@@ -28,14 +28,14 @@ function Home() {
 
     fetchData();
   }, [notify]);
-
+  console.log(stats)
   if (loading)
     return (
       <div className="flex justify-center items-center h-64">
         <p className="text-gray-700 dark:text-gray-300">Loading dashboard...</p>
       </div>
     );
-
+  
   return (
     <div className="space-y-6">
       {/* Dashboard Stats */}
@@ -71,7 +71,7 @@ function Home() {
   <ul className="space-y-2">
     {activities.map((act,i) => (
       <li key={act.id} className="text-gray-600 dark:text-gray-400">
-        {++i} - {act.activity}
+        {++i} - {act.action}
       </li>
     ))}
   </ul>

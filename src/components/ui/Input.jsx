@@ -62,6 +62,7 @@ export default function Input({
           value={value}
           onChange={onChange}
           placeholder={placeholder}
+          autoComplete="current-password"
           className="
             flex-1 bg-transparent focus:outline-none
             text-gray-900 dark:text-white

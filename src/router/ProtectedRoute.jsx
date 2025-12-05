@@ -5,16 +5,20 @@ import { useNotification } from "../contexts/NotificationContext";
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useUser();
-  const { notify } = useNotification()
+  const { notify } = useNotification();
 
   useEffect(() => {
     if (!user && !loading) {
-      notify.error('Logout Success');
+      notify.error("You must be logged in to access this page");
     }
   }, [user, loading, notify]);
 
   if (loading) {
-    return <div style={{ padding: 20 }}>Loading...</div>;
+    return (
+      <div style={{ padding: 20 }}>
+        Loading...
+      </div>
+    );
   }
 
   if (!user) {

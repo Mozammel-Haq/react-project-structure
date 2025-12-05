@@ -1,24 +1,26 @@
-export const getDashboardStats= async()=>{
-    return new Promise ((resolve,reject)=>{
-        setTimeout(()=>{
-            resolve({
-                totalUsers: 50,
-                totalSales: 4500,
-                activeProjects: 6
-            });
-            reject(new Error("Failed to fetch stats"))
-        },100)
-    })
-}
+import api from "./api";
+
+// API call
+export const getDashboardStats = async () => {
+  // try {
+  //   const res = await api.get("/dashboard/stats");
+  //   return res.data;
+  // } catch (err) {
+  //   console.error("getDashboardStats error:", err.message || err);
+  return {
+    totalUsers: 0,
+    totalSales: 0,
+    activeProjects: 0,
+  };
+  // }
+};
 
 export const getRecentActivity = async () => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve([
-        { id: 1, activity: "User John Doe created a new project" },
-        { id: 2, activity: "Project X was marked completed" },
-        { id: 3, activity: "User Jane updated profile" },
-      ]);
-    }, 100);
-  });
+  try {
+    const res = await api.get("/activitylog/");
+    return res.data.activity_log;
+  } catch (err) {
+    console.error("getRecentActivity error:", err.message || err);
+    return [];
+  }
 };
