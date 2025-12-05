@@ -1,28 +1,30 @@
 import { Outlet } from "react-router-dom";
+import Sidebar from "../../components/dashboard/Sidebar";
+import Header from "../../components/dashboard/Header";
+import useToggle from "../../hooks/useToggle";
 
-import DashboardSidebar from "./DashboardSidebar";
-import DasboardHeader from "./DasboardHeader";
+const DashboardLayout = () => {
+    // We use our custom hook to manage the sidebar state on mobile
+    const [isSidebarOpen, toggleSidebar, , closeSidebar] = useToggle(false);
 
-function DashboardLayout() {
+    return (
+        <div className="h-screen flex overflow-hidden bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+            {/* Sidebar */}
+            <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
+            {/* Main Content Wrapper */}
+            <div className="flex flex-col w-0 flex-1 overflow-hidden">
+                <Header toggleSidebar={toggleSidebar} />
 
-  return (
-    <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
-      {/* Sidebar */}
-      <DashboardSidebar/>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-
-        <DasboardHeader/>
-        {/* Page Content */}
-        <main className="flex-1 p-6 overflow-y-auto">
-          <Outlet />
-        </main>
-      </div>
-    </div>
-  );
-}
+                <main className="flex-1 relative overflow-y-auto focus:outline-none p-6">
+                    {/* The specific page (Overview, Profile, etc.) renders here */}
+                    <Outlet />
+                    
+                    {/* If we wanted a sticky overlay on mobile when sidebar is open, we handle it in Sidebar component */}
+                </main>
+            </div>
+        </div>
+    );
+};
 
 export default DashboardLayout;

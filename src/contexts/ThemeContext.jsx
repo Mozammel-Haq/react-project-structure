@@ -1,30 +1,42 @@
-import { createContext, useContext, useEffect, useState } from "react"
+/**
+ * src/contexts/ThemeContext.jsx
+ * 
+ * THEME MANIPULATION
+ * ------------------
+ * Manages Light/Dark mode.
+ * Persists the preference in LocalStorage.
+ */
 
-const ThemeContext =createContext()
-export function ThemeProvider({children}){
+import { createContext, useContext, useEffect } from "react";
+import useLocalStorage from "../hooks/useLocalStorage";
 
-    const [theme, setTheme] = useState(()=>localStorage.getItem('ss-theme') || 'light')
+const ThemeContext = createContext();
 
-    useEffect(()=>{
-        document.documentElement.classList.remove('light','dark')
-        document.documentElement.classList.add(theme)
+export function ThemeProvider({ children }) {
+  // Use custom hook to handle persistence
+  // Default to 'light' if nothing in storage
+  const [theme, setTheme] = useLocalStorage("ss-theme", "light");
 
-        localStorage.setItem("ss-theme",theme)
-    },[theme])
+  // Effect to actually apply the CSS class to the HTML element
+  useEffect(() => {
+    const root = window.document.documentElement;
+    // Remove both to be safe
+    root.classList.remove("light", "dark");
+    // Add the current one
+    root.classList.add(theme);
+  }, [theme]);
 
-    function toggleTheme(){
-        setTheme((prev)=> (prev === 'light'? 'dark' : 'light'))
-    }
+  function toggleTheme() {
+    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+  }
 
-    const value = {theme,toggleTheme}
+  const value = { theme, toggleTheme };
 
   return (
-    <ThemeContext.Provider value={value}>
-        {children}
-    </ThemeContext.Provider>
-  )
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+  );
 }
 
-export function useTheme(){
-    return useContext(ThemeContext)
+export function useTheme() {
+  return useContext(ThemeContext);
 }

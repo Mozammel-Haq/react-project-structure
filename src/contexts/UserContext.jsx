@@ -1,88 +1,117 @@
-import { createContext, useContext, useState, useEffect } from "react";
+/**
+ * src/contexts/UserContext.jsx
+ * 
+ * GLOBAL AUTHENTICATION STATE
+ * ---------------------------
+ * This Context handles "Who is the current user?".
+ * It wraps the entire app, providing `user`, `login`, `logout` to any component.
+ */
+
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import api from "../services/api";
 import parseJwt from "../helpers/parseJWT";
+import useLocalStorage from "../hooks/useLocalStorage";
 
+// Create the Context object
 const UserContext = createContext();
 
 export function UserProvider({ children }) {
+  // 1. STATE DEFINITIONS
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+  // Custom Hook: 'ss_auth_token' is the key in localStorage.
+  // This hook keeps the state 'token' in sync with localStorage automatically.
+  const [token, setToken] = useLocalStorage("ss_auth_token", null);
 
-  // On mount: load user from token
+  // 2. INITIAL AUTH CHECK (On Mount or Token Change)
   useEffect(() => {
-    const init = async () => {
-      const token = localStorage.getItem("ss_auth_token");
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
-      const decoded = parseJwt(token);
-      if (decoded) {
-        
-        const userFromToken = {
-          id: decoded.id,
-          name: decoded.name,
-          email: decoded.email,
-          role_id: decoded.role_id,
-        };
-        setUser(userFromToken);
-      } else {
-        // Invalid token
-        localStorage.removeItem("ss_auth_token");
-        setUser(null);
-      }
+    // If no token exists, we are definitely logged out.
+    if (!token) {
+      setUser(null);
       setLoading(false);
-    };
+      return;
+    }
 
-    init();
-  }, []);
+    // If token exists, we try to decode it (Client-side check).
+    // In a real sophisticated app, you might also hit an endpoint like /auth/me
+    // to verify the token is still valid on the server.
+    const decoded = parseJwt(token);
+    
+    if (decoded) {
+      // If decode success, set the user state
+      setUser({
+        id: decoded.id,
+        name: decoded.name,
+        email: decoded.email,
+        role_id: decoded.role_id,
+      });
+    } else {
+      // If decode fails (malformed token), clear it.
+      setToken(null);
+      setUser(null);
+    }
+    setLoading(false);
+  }, [token, setToken]);
 
-  // login using backend
-  async function login(email, password) {
+  // 3. ACTIONS
+
+  // Login: Calls API -> Gets Token -> Saves Token
+  const login = useCallback(async (email, password) => {
     try {
       const res = await api.post("/auth/login", { email, password });
-      const token = res.data.token;
+      const newToken = res.data.token;
       const returnedUser = res.data.user;
 
-      if (token && returnedUser) {
-        localStorage.setItem("ss_auth_token", token);
-        setUser(returnedUser);
+      if (newToken && returnedUser) {
+        // Setting the token triggers the useEffect above to update 'user' state
+        setToken(newToken);
         return returnedUser;
       } else {
         throw new Error("Invalid login response");
       }
     } catch (err) {
-      localStorage.removeItem("ss_auth_token");
+      setToken(null);
       setUser(null);
       throw err;
     }
-  }
+  }, [setToken]);
 
-  // register 
-  async function register(payload) {
+  // Register: Just calls the API
+  const register = useCallback(async (payload) => {
     const res = await api.post("/auth/register", payload);
     return res.data;
-  }
+  }, []);
 
-  async function logout() {
+  // Logout: Clear the token
+  const logout = useCallback(async () => {
     try {
-      // if backend supports logout endpoint to invalidate token
+      // Optional: Tell server to blacklist token
       await api.post("/auth/logout");
     } catch (err) {
-      // ignore errors but you may want to handle them
       console.warn("logout request failed:", err?.message || err);
     } finally {
-      localStorage.removeItem("ss_auth_token");
-      setUser(null);
+      // Clearing the token is the most important part
+      setToken(null);
     }
-  }
+  }, [setToken]);
 
-  const value = { user, loading, login, logout, register };
+  // 4. MEMOIZATION
+  // We wrap the context value in useMemo.
+  // WHY? If we passed a new object {{...}} every time UserProvider renders,
+  // ALL components listening to this context would re-render unnecessarily.
+  const value = useMemo(() => ({
+    user,
+    loading,
+    login,
+    logout,
+    register
+  }), [user, loading, login, logout, register]);
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 }
 
+// Helper hook to use the context
 export function useUser() {
   return useContext(UserContext);
 }
